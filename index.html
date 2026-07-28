@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0a0a0b">
+  <meta name="description" content="Gestor de proyectos e ideas con almacenamiento local.">
+  <title>ProjectFlow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-icon"><i data-lucide="layers-3"></i></div>
+        <div>
+          <strong>ProjectFlow</strong>
+          <span>Workspace personal</span>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item active" data-view="dashboard">
+          <i data-lucide="layout-dashboard"></i><span>Dashboard</span>
+        </button>
+        <button class="nav-item" data-view="projects">
+          <i data-lucide="folder-kanban"></i><span>Proyectos</span>
+          <b id="navProjectsCount">0</b>
+        </button>
+        <button class="nav-item" data-view="ideas">
+          <i data-lucide="lightbulb"></i><span>Ideas</span>
+          <b id="navIdeasCount">0</b>
+        </button>
+        <button class="nav-item" data-view="backups">
+          <i data-lucide="database-backup"></i><span>Respaldos</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-note">
+        <i data-lucide="hard-drive"></i>
+        <div>
+          <strong>Datos locales</strong>
+          <span>Todo se guarda en este navegador.</span>
+        </div>
+      </div>
+    </aside>
+
+    <div class="overlay" id="overlay"></div>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-title">
+          <button class="icon-btn mobile-only" id="menuBtn" aria-label="Abrir menú">
+            <i data-lucide="menu"></i>
+          </button>
+          <div>
+            <span id="viewEyebrow">Visión general</span>
+            <h1 id="viewTitle">Dashboard</h1>
+          </div>
+        </div>
+        <button class="btn primary" id="primaryAction">
+          <i data-lucide="plus"></i>
+          <span>Nuevo proyecto</span>
+        </button>
+      </header>
+
+      <section class="content">
+        <div class="view active" id="dashboardView">
+          <section class="hero">
+            <div>
+              <span class="pill"><i data-lucide="sparkles"></i> Centro de desarrollo</span>
+              <h2>Convierte ideas sueltas en proyectos reales.</h2>
+              <p>Organiza tus proyectos, registra ideas y mantén todo tu trabajo en un solo lugar.</p>
+              <div class="hero-actions">
+                <button class="btn primary" id="heroProjectBtn"><i data-lucide="plus"></i> Crear proyecto</button>
+                <button class="btn secondary" id="heroIdeaBtn"><i data-lucide="lightbulb"></i> Registrar idea</button>
+              </div>
+            </div>
+            <div class="hero-graphic">
+              <div class="orb"><i data-lucide="code-2"></i></div>
+              <span class="sat sat-a"><i data-lucide="git-branch"></i></span>
+              <span class="sat sat-b"><i data-lucide="rocket"></i></span>
+              <span class="sat sat-c"><i data-lucide="brain-circuit"></i></span>
+            </div>
+          </section>
+
+          <section class="metrics">
+            <article class="metric"><span>Total de proyectos</span><strong id="metricTotal">0</strong><small>Todos los registros</small></article>
+            <article class="metric"><span>En desarrollo</span><strong id="metricActive">0</strong><small>Proyectos activos</small></article>
+            <article class="metric"><span>Finalizados</span><strong id="metricDone">0</strong><small id="metricDoneRate">0% completado</small></article>
+            <article class="metric"><span>Total de ideas</span><strong id="metricIdeas">0</strong><small id="metricHighIdeas">0 con factibilidad alta</small></article>
+          </section>
+
+          <section class="dashboard-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div><span>Actividad reciente</span><h3>Últimos proyectos</h3></div>
+                <button class="link-btn" data-go="projects">Ver todos <i data-lucide="arrow-right"></i></button>
+              </div>
+              <div id="recentProjects" class="stack-list"></div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-head">
+                <div><span>Distribución</span><h3>Estado de proyectos</h3></div>
+              </div>
+              <div id="statusSummary" class="status-summary"></div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-head">
+                <div><span>Por explorar</span><h3>Ideas recientes</h3></div>
+                <button class="link-btn" data-go="ideas">Ver todas <i data-lucide="arrow-right"></i></button>
+              </div>
+              <div id="recentIdeas" class="stack-list"></div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-head">
+                <div><span>Stack</span><h3>Tecnologías más usadas</h3></div>
+              </div>
+              <div id="techCloud" class="tech-cloud"></div>
+            </article>
+          </section>
+        </div>
+
+        <div class="view" id="projectsView">
+          <div class="section-head">
+            <div><span>Portafolio de trabajo</span><h2>Proyectos</h2><p>Administra todo el ciclo de vida de tus desarrollos.</p></div>
+            <button class="btn primary" id="newProjectBtn"><i data-lucide="plus"></i> Nuevo proyecto</button>
+          </div>
+
+          <div class="toolbar">
+            <div class="search"><i data-lucide="search"></i><input id="projectSearch" type="search" placeholder="Buscar proyectos..."></div>
+            <select id="projectStatusFilter">
+              <option value="Todos">Todos los estados</option>
+              <option value="Idea">Idea</option>
+              <option value="En Desarrollo">En desarrollo</option>
+              <option value="Pausado">Pausado</option>
+              <option value="Finalizado">Finalizado</option>
+            </select>
+            <select id="projectSort">
+              <option value="updated-desc">Actualizados recientemente</option>
+              <option value="date-desc">Inicio más reciente</option>
+              <option value="date-asc">Inicio más antiguo</option>
+              <option value="name-asc">Nombre A-Z</option>
+            </select>
+          </div>
+
+          <div class="result-line"><span id="projectResultText">0 proyectos</span></div>
+          <div id="projectsGrid" class="cards-grid"></div>
+        </div>
+
+        <div class="view" id="ideasView">
+          <div class="section-head">
+            <div><span>Laboratorio creativo</span><h2>Lluvia de ideas</h2><p>Captura conceptos y conviértelos en proyectos.</p></div>
+            <button class="btn primary" id="newIdeaBtn"><i data-lucide="plus"></i> Nueva idea</button>
+          </div>
+
+          <form class="quick-idea" id="quickIdeaForm">
+            <i data-lucide="zap"></i>
+            <input id="quickIdeaTitle" required maxlength="100" placeholder="Escribe una idea rápida...">
+            <select id="quickIdeaCategory">
+              <option>Aplicación web</option>
+              <option>Aplicación móvil</option>
+              <option>Automatización</option>
+              <option>Herramienta</option>
+              <option>Juego</option>
+              <option>Negocio</option>
+              <option>Otro</option>
+            </select>
+            <select id="quickIdeaFeasibility">
+              <option>Alta</option>
+              <option selected>Media</option>
+              <option>Baja</option>
+            </select>
+            <button class="btn primary" type="submit"><i data-lucide="corner-down-left"></i> Guardar</button>
+          </form>
+
+          <div class="toolbar">
+            <div class="search"><i data-lucide="search"></i><input id="ideaSearch" type="search" placeholder="Buscar ideas..."></div>
+            <select id="ideaCategoryFilter"><option value="Todas">Todas las categorías</option></select>
+            <select id="ideaFeasibilityFilter">
+              <option value="Todas">Toda factibilidad</option>
+              <option>Alta</option>
+              <option>Media</option>
+              <option>Baja</option>
+            </select>
+          </div>
+
+          <div class="result-line"><span id="ideaResultText">0 ideas</span></div>
+          <div id="ideasGrid" class="cards-grid"></div>
+        </div>
+
+        <div class="view" id="backupsView">
+          <div class="section-head">
+            <div><span>Seguridad de datos</span><h2>Respaldos</h2><p>Exporta, importa o reinicia tu workspace.</p></div>
+          </div>
+
+          <div class="backup-grid">
+            <article class="backup-card">
+              <i data-lucide="download"></i>
+              <h3>Exportar datos</h3>
+              <p>Descarga todos tus proyectos e ideas en un archivo JSON.</p>
+              <button class="btn primary full" id="exportBtn">Exportar JSON</button>
+            </article>
+            <article class="backup-card">
+              <i data-lucide="upload"></i>
+              <h3>Importar datos</h3>
+              <p>Restaura un respaldo válido o combínalo con tus datos actuales.</p>
+              <button class="btn secondary full" id="importBtn">Seleccionar archivo</button>
+              <input id="importInput" type="file" accept=".json,application/json" hidden>
+            </article>
+            <article class="backup-card danger-card">
+              <i data-lucide="trash-2"></i>
+              <h3>Restablecer workspace</h3>
+              <p>Elimina permanentemente todos los datos guardados.</p>
+              <button class="btn danger full" id="resetBtn">Eliminar todo</button>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="projectDialog">
+    <form method="dialog" class="modal-form" id="projectForm">
+      <div class="modal-head">
+        <div><span>Gestión de proyecto</span><h2 id="projectDialogTitle">Nuevo proyecto</h2></div>
+        <button class="icon-btn" value="cancel"><i data-lucide="x"></i></button>
+      </div>
+      <input type="hidden" id="projectId">
+      <label>Nombre del proyecto<input id="projectName" required maxlength="100"></label>
+      <label>Descripción<textarea id="projectDescription" required maxlength="800"></textarea></label>
+      <div class="form-row">
+        <label>Estado
+          <select id="projectStatus">
+            <option>Idea</option><option>En Desarrollo</option><option>Pausado</option><option>Finalizado</option>
+          </select>
+        </label>
+        <label>Fecha de inicio<input id="projectStartDate" type="date" required></label>
+      </div>
+      <label>Tecnologías<input id="projectTechnologies" placeholder="HTML, CSS, JavaScript"></label>
+      <label>Repositorio o demo<input id="projectLink" type="url" placeholder="https://..."></label>
+      <div class="modal-actions">
+        <button class="btn secondary" value="cancel">Cancelar</button>
+        <button class="btn primary" type="submit" value="default"><i data-lucide="save"></i> Guardar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="ideaDialog">
+    <form method="dialog" class="modal-form" id="ideaForm">
+      <div class="modal-head">
+        <div><span>Banco creativo</span><h2 id="ideaDialogTitle">Nueva idea</h2></div>
+        <button class="icon-btn" value="cancel"><i data-lucide="x"></i></button>
+      </div>
+      <input type="hidden" id="ideaId">
+      <label>Título<input id="ideaTitle" required maxlength="100"></label>
+      <label>Notas<textarea id="ideaNotes" maxlength="1000"></textarea></label>
+      <div class="form-row">
+        <label>Categoría<input id="ideaCategory" required list="categoriesList"></label>
+        <label>Factibilidad
+          <select id="ideaFeasibility"><option>Alta</option><option selected>Media</option><option>Baja</option></select>
+        </label>
+      </div>
+      <datalist id="categoriesList">
+        <option value="Aplicación web"><option value="Aplicación móvil"><option value="Automatización">
+        <option value="Herramienta"><option value="Juego"><option value="Negocio"><option value="Otro">
+      </datalist>
+      <div class="modal-actions">
+        <button class="btn secondary" value="cancel">Cancelar</button>
+        <button class="btn primary" type="submit" value="default"><i data-lucide="save"></i> Guardar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toastContainer" class="toast-container"></div>
+</body>
+</html>
